@@ -9,7 +9,10 @@ exports.createCustomer = async (req, res) => {
     });
 
     const customerId = customer.id;
-    console.log("customer_ID: ", customer);
+    const customers = await stripe.customers.list({
+        limit: 3,
+        });
+        console.log(customers)
 
     const setupIntent = await stripe.setupIntents.create({
       customer: customerId,
@@ -23,13 +26,18 @@ exports.createCustomer = async (req, res) => {
       },
     });
 
-    res.json({ clientSecret: setupIntent.client_secret });
+    res.json({ clientSecret: setupIntent.client_secret, customer: customer.id });
   } catch (error) {
     console.error("Error creating customer: ", error);
     res.status(500).send("Internal Server Error");
   }
 };
 
+
 exports.renderTestPage = (req, res) => {
   res.render('index',{publishableKey});
 };
+
+exports.renderPaymentPage = (req, res) =>{
+  res.render('completePayment',{publishableKey});
+}
