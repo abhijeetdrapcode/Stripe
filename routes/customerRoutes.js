@@ -16,4 +16,7 @@ router.get('/success',customerController.renderSuccessPage);
 
 router.post('/create-payment-intent', customerController.createPayment);
 
+
+router.get('/financial-accounts/:customerId', customerController.getFinancialAccounts);
+
 module.exports = router;

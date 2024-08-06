@@ -86,7 +86,7 @@
       async function getAccountDetails() {
         try {
           const response = await fetch(`http://localhost:3001/financial-accounts/${customerId}`);
-          console.log("thisiscustomerid: ",customerId)
+          console.log("thisiscustomerid: ", customerId)
           if (!response.ok) {
             throw new Error('Failed to retrieve account details');
           }
@@ -111,7 +111,7 @@
               Bank: ${account.bankName}<br>
               Account Type: ${account.accountType}<br>
               Last 4 digits: ${account.last4}<br>
-              Balance: ${account.balance / 100} ${account.currency}
+             Balance: ${account.balance} ${account.currency}
             </p>
           `;
         });

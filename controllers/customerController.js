@@ -53,6 +53,39 @@ exports.createPayment =  async (req, res) => {
   }
 }
 
+
+exports.getFinancialAccounts = async (req, res) => {
+  try {
+    const customerId = req.params.customerId;
+
+    // First, retrieve the customer's payment methods
+    const paymentMethods = await stripe.paymentMethods.list({
+      customer: customerId,
+      type: 'us_bank_account',
+    });
+
+    if (paymentMethods.data.length === 0) {
+      return res.json({ success: false, message: 'No bank accounts found for this customer' });
+    }
+
+    // Get the bank account details from the first payment method
+    const bankAccount = paymentMethods.data[0].us_bank_account;
+
+    const accountDetails = [{
+      bankName: bankAccount.bank_name,
+      accountType: bankAccount.account_type,
+      last4: bankAccount.last4,
+      // Note: Balance information is not available through this API
+      balance: 'Not available',
+      currency: 'USD',
+    }];
+
+    res.json({ success: true, accountDetails });
+  } catch (error) {
+    console.error("Error retrieving financial accounts: ", error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
 exports.renderTestPage = (req, res) => {
   res.render("index", { publishableKey });
 };
