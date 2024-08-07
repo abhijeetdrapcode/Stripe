@@ -8,10 +8,8 @@ exports.createCustomer = async (req, res) => {
       email: "abhijeet@gmail.com",
     });
 
-    const customerId = customer.id;
-
     const setupIntent = await stripe.setupIntents.create({
-      customer: customerId,
+      customer: customer.id,
       payment_method_types: ["us_bank_account"],
       payment_method_options: {
         us_bank_account: {
@@ -22,7 +20,7 @@ exports.createCustomer = async (req, res) => {
       },
     });
 
-    res.json({
+    res.status(200).json({
       clientSecret: setupIntent.client_secret,
       customer: customer.id,
     });
@@ -55,13 +53,13 @@ exports.getFinancialAccounts = async (req, res) => {
       currency: 'USD',
     }];
 
-    res.json({ success: true, accountDetails });
+    res.status(200).json({ success: true, accountDetails });
   } catch (error) {
     console.error("Error retrieving financial accounts: ", error);
     res.status(500).json({ success: false, error: error.message });
   }
 };
 
-exports.renderPaymentPage = (req, res) => {
+exports.renderAccountPage = (req, res) => {
   res.render("Account", { publishableKey });
 };
