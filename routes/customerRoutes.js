@@ -1,22 +1,11 @@
-
 const express = require('express');
 const router = express.Router();
 const customerController = require('../controllers/customerController');
 
+router.post('/', customerController.createCustomer); // to get the clientSecret and customerId
 
-router.get('/', customerController.createCustomer);
+router.get('/payment',customerController.renderPaymentPage);// to render the ejs file
 
-router.get('/testing', customerController.renderTestPage,);
-
-router.get('/payment',customerController.renderPaymentPage);
-
-router.get('/pay',customerController.renderTestingPage);
-
-router.get('/success',customerController.renderSuccessPage);
-
-router.post('/create-payment-intent', customerController.createPayment);
-
-
-router.get('/financial-accounts/:customerId', customerController.getFinancialAccounts);
+router.get('/financial-accounts/:customerId', customerController.getFinancialAccounts); //to get the bank details
 
 module.exports = router;

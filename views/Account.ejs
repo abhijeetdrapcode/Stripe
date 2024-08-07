@@ -6,17 +6,39 @@
     <title>Connect US Bank Account</title>
     <script src="https://js.stripe.com/v3/"></script>
     <style>
-      body { font-family: Arial, sans-serif; line-height: 1.6; padding: 20px; }
-      #payment-form { max-width: 400px; margin: 0 auto; }
-      #payment-element { margin-bottom: 20px; }
-      button { background-color: #4CAF50; color: white; padding: 10px 20px; border: none; cursor: pointer; }
-      #error-message { color: red; margin-top: 10px; }
-      #account-details { margin-top: 20px; }
+      body {
+        font-family: Arial, sans-serif;
+        line-height: 1.6;
+        padding: 20px;
+      }
+      #payment-form {
+        max-width: 400px;
+        margin: 0 auto;
+        display: none;
+      }
+      #payment-element {
+        margin-bottom: 20px;
+      }
+      button {
+        background-color: #4caf50;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        cursor: pointer;
+      }
+      #error-message {
+        color: red;
+        margin-top: 10px;
+      }
+      #account-details {
+        margin-top: 20px;
+      }
     </style>
   </head>
   <body>
     <main>
       <h1>Connect US Bank Account</h1>
+      <button id="authorize" onclick="initialize()">Authorize</button>
       <form id="payment-form">
         <div id="payment-element"></div>
         <button id="submit">Connect Account</button>
@@ -25,35 +47,40 @@
       <div id="account-details"></div>
     </main>
     <script>
-      const stripe = Stripe('<%= publishableKey %>');
+      const stripe = Stripe("<%= publishableKey %>");
       let elements;
       let customerId;
 
-      document.addEventListener('DOMContentLoaded', initialize);
-      document.querySelector("#payment-form").addEventListener("submit", handleSubmit);
+      document
+        .querySelector("#payment-form")
+        .addEventListener("submit", handleSubmit);
 
       async function initialize() {
         try {
-          let response = await fetch("http://localhost:3001/");
+          let response = await fetch("http://localhost:3001/", {
+            method: "POST", 
+            headers: {
+              "Content-Type": "application/json", 
+            }
+          });
           if (!response.ok) {
-            throw new Error('Failed to create customer');
+            throw new Error("Failed to create customer");
           }
-          
+
           const { clientSecret, customer } = await response.json();
-          console.log(clientSecret);
+          // console.log(clientSecret); This was written to test if we are getting the clientSecret or not 
           customerId = customer;
 
-          const appearance = {
-            theme: 'stripe',
-          };
-          
-          elements = stripe.elements({ appearance, clientSecret });
+          elements = stripe.elements({ clientSecret });
 
           const paymentElement = elements.create("payment");
           paymentElement.mount("#payment-element");
+
+          document.querySelector("#payment-form").style.display = "block";
+          document.querySelector("#authorize").style.display = "none";
         } catch (error) {
-          console.error('Initialization error:', error);
-          showError('Failed to initialize. Please try again.');
+          console.error("Initialization error:", error);
+          showError("Failed to initialize. Please try again.");
         }
       }
 
@@ -64,7 +91,7 @@
         try {
           const { error, setupIntent } = await stripe.confirmSetup({
             elements,
-            redirect: 'if_required'
+            redirect: "if_required",
           });
 
           if (error) {
@@ -74,7 +101,10 @@
             await getAccountDetails();
           }
         } catch (error) {
-          if (error.type === "card_error" || error.type === "validation_error") {
+          if (
+            error.type === "card_error" ||
+            error.type === "validation_error"
+          ) {
             showError(error.message);
           } else {
             showError("An unexpected error occurred.");
@@ -85,27 +115,29 @@
 
       async function getAccountDetails() {
         try {
-          const response = await fetch(`http://localhost:3001/financial-accounts/${customerId}`);
-          console.log("thisiscustomerid: ", customerId)
+          const response = await fetch(
+            `http://localhost:3001/financial-accounts/${customerId}`
+          );
+          // console.log("thisiscustomerid: ", customerId); This was also written to see if the customerId is passing successfully or not 
           if (!response.ok) {
-            throw new Error('Failed to retrieve account details');
+            throw new Error("Failed to retrieve account details");
           }
           const data = await response.json();
           if (data.success) {
             displayAccountDetails(data.accountDetails);
           } else {
-            throw new Error('Failed to retrieve account details');
+            throw new Error("Failed to retrieve account details");
           }
         } catch (error) {
-          console.error('Error retrieving account details:', error);
-          showError('Failed to retrieve account details. Please try again.');
+          console.error("Error retrieving account details:", error);
+          showError("Failed to retrieve account details. Please try again.");
         }
       }
 
       function displayAccountDetails(details) {
         const accountDetailsDiv = document.querySelector("#account-details");
-        accountDetailsDiv.innerHTML = '<h2>Connected Account Details:</h2>';
-        details.forEach(account => {
+        accountDetailsDiv.innerHTML = "<h2>Connected Account Details:</h2>";
+        details.forEach((account) => {
           accountDetailsDiv.innerHTML += `
             <p>
               Bank: ${account.bankName}<br>
@@ -129,7 +161,9 @@
       function setLoading(isLoading) {
         const submitButton = document.querySelector("#submit");
         submitButton.disabled = isLoading;
-        submitButton.textContent = isLoading ? "Processing..." : "Connect Account";
+        submitButton.textContent = isLoading
+          ? "Processing..."
+          : "Connect Account";
       }
     </script>
   </body>
